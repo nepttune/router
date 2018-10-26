@@ -1,12 +1,12 @@
 # Router
 :wrench: Customizable router factory
 
-![Packagist](https://img.shields.io/packagist/dt/nepttune/sitemap.svg)
-![Packagist](https://img.shields.io/packagist/v/nepttune/sitemap.svg)
-[![CommitsSinceTag](https://img.shields.io/github/commits-since/nepttune/sitemap/v1.1.1.svg?maxAge=600)]()
+![Packagist](https://img.shields.io/packagist/dt/nepttune/router.svg)
+![Packagist](https://img.shields.io/packagist/v/nepttune/router.svg)
+[![CommitsSinceTag](https://img.shields.io/github/commits-since/nepttune/router/v1.0.svg?maxAge=600)]()
 
-[![Code Climate](https://codeclimate.com/github/nepttune/sitemap/badges/gpa.svg)](https://codeclimate.com/github/nepttune/sitemap)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/nepttune/sitemap/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/nepttune/sitemap/?branch=master)
+[![Code Climate](https://codeclimate.com/github/nepttune/router/badges/gpa.svg)](https://codeclimate.com/github/nepttune/router)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/nepttune/router/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/nepttune/router/?branch=master)
 
 ## Introduction
 
@@ -36,7 +36,7 @@ services:
         class: Nepttune\RouterFactory
         arguments: 
             - %router%
-    router: @routerFactory::createSubdomainRouter
+    router: @routerFactory::createRouter
     
 parameters:
     router:
