@@ -11,7 +11,8 @@
     }
   ],
   "require": {
-    "nepttune/base-requirements": "^4.0"
+    "nepttune/base-requirements": "^4.0",
+    "hashids/hashids": "^3.0"
   },
   "autoload": {
     "psr-4": {
