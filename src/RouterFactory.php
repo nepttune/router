@@ -22,9 +22,19 @@ class RouterFactory
     /** @var array */
     protected $config;
 
-    public function injectConfig(array $config) : void
+    protected const DEFAULTS = [
+        'hashids' => false,
+        'hashidsSalt' => 'XXXXX',
+        'hashidsPadding' => 10,
+        'hashidsCharset' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
+        'subdomain' => false,
+        'apimodule' => false,
+        'defaultModule' => 'Www'
+    ];
+
+    public function __construct(array $config)
     {
-        $this->config = $config;
+        $this->config = \array_merge(static::DEFAULTS, $config);
     }
 
     public function createRouter() : RouteList
