@@ -55,8 +55,6 @@ class RouterFactory
             ]);
         }
 
-        $this->config['modules']['<module>'] = $this->config['defaultModule'];
-
         foreach ($this->config['modules'] as $url => $nmspc)
         {
             $router[] = new Route('/[<locale>/]' . \lcfirst($url) . '/<presenter>/<action>[/<id>]', [
@@ -68,6 +66,15 @@ class RouterFactory
                 null => $this->getGlobalConfig()
             ]);
         }
+        
+        $router[] = new Route('/[<locale>/]<presenter>/<action>[/<id>]', [
+            'locale' => [Route::PATTERN => '[a-z]{2}'],
+            'module' => \ucfirst($this->config['defaultModule']),
+            'presenter' => 'Default',
+            'action' => 'default',
+            'id' => $this->getIdConfig(),
+            null => $this->getGlobalConfig()
+        ]);
 
         return $router;
     }
