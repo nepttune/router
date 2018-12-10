@@ -48,10 +48,12 @@ class RouterFactory
 
         if ($this->config['apimodule'])
         {
-            $router[] = new Route('/api/<presenter>/<action>', [
+            $router[] = new Route('/api/<presenter>/<action>[/<id>]', [
                 'module' => 'Api',
                 'presenter' => 'Default',
-                'action' => 'default'
+                'action' => 'default',
+                'id' => $this->getIdConfig(),
+                null => $this->getGlobalConfig()
             ]);
         }
 
