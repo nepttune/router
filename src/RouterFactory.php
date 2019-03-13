@@ -19,22 +19,22 @@ use Nette\Application\Routers\RouteList,
 
 class RouterFactory
 {
-    /** @var array */
-    protected $config;
-
-    protected const DEFAULTS = [
+    private static $defaultConfig = [
         'hashids' => false,
-        'hashidsSalt' => 'XXXXX',
+        'hashidsSalt' => 'nGXWFaJfxlMCkn9aU8XK',
         'hashidsPadding' => 10,
         'hashidsCharset' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
         'subdomain' => false,
         'apimodule' => false,
         'defaultModule' => 'Www'
     ];
+    
+    /** @var array */
+    protected $config;
 
     public function __construct(array $config)
     {
-        $this->config = \array_merge(static::DEFAULTS, $config);
+        $this->config = \array_merge(self::$defaultConfig, $config);
     }
 
     public function createRouter() : RouteList
