@@ -148,7 +148,11 @@ class RouterFactory
         if (!empty($parameters['id']))
         {
             $hashIds = $this->getHashIds($parameters);
-            $parameters['id'] = (int) $hashIds->decode($parameters['id'])[0];
+            $decoded = $hashIds->decode($parameters['id']);
+
+            if ($decoded) {
+                $parameters['id'] = (int) $decoded[0];
+            }
         }
 
         return $parameters;
@@ -156,10 +160,10 @@ class RouterFactory
 
     public function filterOut(array $parameters) : array
     {
-        if (!empty($parameters['id']))
+        if (!empty($parameters['id']) && (\is_int($parameters['id']) || \is_numeric($parameters['id'])))
         {
             $hashIds = $this->getHashIds($parameters);
-            $parameters['id'] = (string) $hashIds->encode($parameters['id']);
+            $parameters['id'] = (string) $hashIds->encode((int) $parameters['id']);
         }
 
         return $parameters;
