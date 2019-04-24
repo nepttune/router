@@ -26,6 +26,7 @@ class RouterFactory
         'hashidsCharset' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
         'subdomain' => false,
         'apimodule' => false,
+        'modules' => [],
         'defaultModule' => 'Www'
     ];
     
