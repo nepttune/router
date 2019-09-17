@@ -21,7 +21,7 @@ class RouterFactory
 {
     private static $defaultConfig = [
         'hashids' => false,
-        'hashidsSalt' => 'nGXWFaJfxlMCkn9aU8XK',
+        'hashidsSalt' => 'nGXWFaJfxl',
         'hashidsPadding' => 10,
         'hashidsCharset' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
         'subdomain' => false,
@@ -40,44 +40,23 @@ class RouterFactory
 
     public function createRouter() : RouteList
     {
-        if ($this->config['subdomain'])
-        {
-            return static::createSubdomainRouter();
-        }
+        return $this->config['subdomain']
+            ? static::createSubdomainRouter()
+            : static::createStandardRouter();
+    }
 
-        $router = static::createRouteList();
+    protected static function createRouteList() : RouteList
+    {
+        $router = new RouteList();
 
-        if ($this->config['apimodule'])
-        {
-            $router[] = new Route('/api/<presenter>/<action>[/<id>]', [
-                'module' => 'Api',
-                'presenter' => 'Default',
-                'action' => 'default',
-                'id' => $this->getIdConfig(),
-                null => $this->getGlobalConfig()
-            ]);
-        }
-
-        foreach ($this->config['modules'] as $url => $nmspc)
-        {
-            $router[] = new Route('/[<locale>/]' . \lcfirst($url) . '/<presenter>/<action>[/<id>]', [
-                'locale' => [Route::PATTERN => '[a-z]{2}'],
-                'module' => \ucfirst($nmspc),
-                'presenter' => 'Default',
-                'action' => 'default',
-                'id' => $this->getIdConfig(),
-                null => $this->getGlobalConfig()
-            ]);
-        }
-        
-        $router[] = new Route('/[<locale>/]<presenter>/<action>[/<id>]', [
-            'locale' => [Route::PATTERN => '[a-z]{2}'],
-            'module' => \ucfirst($this->config['defaultModule']),
-            'presenter' => 'Default',
-            'action' => 'default',
-            'id' => $this->getIdConfig(),
-            null => $this->getGlobalConfig()
-        ]);
+        $router[] = new Route('/robots.txt', 'Tool:robots');
+        $router[] = new Route('/sitemap.xml', 'Tool:sitemap');
+        $router[] = new Route('/worker.js', 'Tool:worker');
+        $router[] = new Route('/manifest.json', 'Tool:manifest');
+        $router[] = new Route('/browserconfig.xml', 'Tool:browserconfig');
+        $router[] = new Route('/security.txt', 'Tool:security');
+        $router[] = new Route('/.well-known/security.txt', 'Tool:security');
+        $router[] = new Route('/push-subscribe', 'Tool:subscribe');
 
         return $router;
     }
@@ -97,26 +76,46 @@ class RouterFactory
         return $router;
     }
 
-    protected static function createRouteList() : RouteList
+    protected function createStandardRouter() : RouteList
     {
-        $router = new RouteList();
+        $router = static::createRouteList();
 
-        $router[] = new Route('/robots.txt', 'Tool:robots');
-        $router[] = new Route('/sitemap.xml', 'Tool:sitemap');
-        $router[] = new Route('/worker.js', 'Tool:worker');
-        $router[] = new Route('/manifest.json', 'Tool:manifest');
-        $router[] = new Route('/browserconfig.xml', 'Tool:browserconfig');
-        $router[] = new Route('/security.txt', 'Tool:security');
-        $router[] = new Route('/.well-known/security.txt', 'Tool:security');
-        $router[] = new Route('/push-subscribe', 'Tool:subscribe');
+        if ($this->config['apimodule']) {
+            $router[] = new Route('/api/<presenter>/<action>[/<id>]', [
+                'module' => 'Api',
+                'presenter' => 'Default',
+                'action' => 'default',
+                'id' => $this->getIdConfig(),
+                null => $this->getGlobalConfig()
+            ]);
+        }
+
+        foreach ($this->config['modules'] as $url => $nmspc) {
+            $router[] = new Route('/[<locale>/]' . \lcfirst($url) . '/<presenter>/<action>[/<id>]', [
+                'locale' => [Route::PATTERN => '[a-z]{2}'],
+                'module' => \ucfirst($nmspc),
+                'presenter' => 'Default',
+                'action' => 'default',
+                'id' => $this->getIdConfig(),
+                null => $this->getGlobalConfig()
+            ]);
+        }
+
+        $router[] = new Route('/[<locale>/]<presenter>/<action>[/<id>]', [
+            'locale' => [Route::PATTERN => '[a-z]{2}'],
+            'module' => \ucfirst($this->config['defaultModule']),
+            'presenter' => 'Default',
+            'action' => 'default',
+            'id' => $this->getIdConfig(),
+            null => $this->getGlobalConfig()
+        ]);
 
         return $router;
     }
 
     protected function getIdConfig() : array
     {
-        if ($this->config['hashids'])
-        {
+        if ($this->config['hashids']) {
             return [];
         }
 
@@ -125,35 +124,24 @@ class RouterFactory
 
     protected function getGlobalConfig() : array
     {
-        if ($this->config['hashids'])
-        {
+        if ($this->config['hashids']) {
             return [Route::FILTER_IN => [$this, 'filterIn'], Route::FILTER_OUT => [$this, 'filterOut']];
         }
 
         return [];
     }
 
-    protected function getHashIds(array $parameters) : \Hashids\Hashids
-    {
-        $dest = "{$parameters['module']}:{$parameters['presenter']}:{$parameters['action']}";
-
-        return new \Hashids\Hashids(
-            $this->config['hashidsSalt'] . $dest,
-            $this->config['hashidsPadding'],
-            $this->config['hashidsCharset']
-        );
-    }
-
     public function filterIn(array $parameters) : array
     {
-        if (!empty($parameters['id']))
-        {
+        if (\array_key_exists('id', $parameters) && \is_string($parameters['id'])) {
             $hashIds = $this->getHashIds($parameters);
             $decoded = $hashIds->decode($parameters['id']);
 
-            if ($decoded) {
-                $parameters['id'] = (int) $decoded[0];
+            if (\count($decoded) === 0) {
+                throw new \Nette\InvalidStateException('Hashids failed to decode ID.');
             }
+
+            $parameters['id'] = (int) \current($decoded);
         }
 
         return $parameters;
@@ -161,12 +149,28 @@ class RouterFactory
 
     public function filterOut(array $parameters) : array
     {
-        if (!empty($parameters['id']) && (\is_int($parameters['id']) || \is_numeric($parameters['id'])))
-        {
+        if (\array_key_exists('id', $parameters) && (\is_int($parameters['id']) || \is_numeric($parameters['id']))) {
             $hashIds = $this->getHashIds($parameters);
-            $parameters['id'] = (string) $hashIds->encode((int) $parameters['id']);
+            $encoded = $hashIds->encode($parameters['id']);
+
+            if (\strlen($encoded) === 0) {
+                throw new \Nette\InvalidStateException('Hashids failed to encode ID.');
+            }
+
+            $parameters['id'] = $encoded;
         }
 
         return $parameters;
+    }
+
+    private function getHashIds(array $parameters) : \Hashids\Hashids
+    {
+        $dest = "{$parameters['module']}-{$parameters['presenter']}-{$parameters['action']}";
+
+        return new \Hashids\Hashids(
+            $this->config['hashidsSalt'] . $dest,
+            $this->config['hashidsPadding'],
+            $this->config['hashidsCharset']
+        );
     }
 }
